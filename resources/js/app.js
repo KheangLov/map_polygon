@@ -8,6 +8,7 @@ require('./bootstrap');
 
 window.Vue = require('vue').default;
 
+
 /**
  * The following block of code may be used to automatically register your
  * Vue components. It will recursively scan this directory for the Vue
@@ -27,6 +28,8 @@ Vue.component('example-component', require('./components/ExampleComponent.vue').
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
+import MarkerClusterer from '@googlemaps/markerclustererplus';
+
 const { Loader } = require('google-maps');
 
 const loader = new Loader('AIzaSyDil3fAJv-TSSv2OMEIu2fPl7bMfc8x5a0', {
@@ -37,6 +40,7 @@ new Vue({
     el: '#app',
     data() {
         return {
+            markers: [],
             map: {},
             drawingManager: {},
             selectedType: 0,
@@ -72,7 +76,10 @@ new Vue({
             ],
             displayData: '',
             polygon: [],
-            importedData: ''
+            importedData: '',
+            imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m',
+            windowPath: '',
+            formData: [],
         };
     },
     async created() {
@@ -80,6 +87,40 @@ new Vue({
         this.mapInit();
     },
     methods: {
+        submit() {
+            axios.post('/submit', data)
+                .then(res => window.location.reload());
+        },
+        review(url = '/review') {
+            axios.get(url)
+                .then(async ({ data: { data: { data, next_page_url } } }) => {
+                    await data.forEach(({ let: lat, long }) => {
+                        const marker = new google.maps.Marker({
+                            position: new google.maps.LatLng(lat, long),
+                            map: this.map,
+                            draggable: true
+                        });
+                        this.markers.push(marker);
+                    });
+
+                    this.addCluster();
+                    if (next_page_url) {
+                        this.review(next_page_url);
+                    }
+                });
+        },
+        addCluster() {
+            if (this.markers.length) {
+                const markerCt = new MarkerClusterer(
+                    this.map,
+                    this.markers,
+                    {
+                        imagePath: this.imagePath
+                    }
+                );
+                markerCt.setIgnoreHidden(true);
+            }
+        },
         importData() {
             this.drawPolygon(this.importedData.split(/\r?\n/).filter(v => v).map(v => {
                 const latLng = v.split(',');
@@ -95,7 +136,20 @@ new Vue({
                 center: { lat: 12.3417719, lng: 105.2355957 },
                 zoom: 7,
             }));
-            this.drawingTool();
+            if (this.windowPath == 'draw') this.drawingTool();
+
+            if (this.windowPath == 'form')
+                this.map.addListener('click', ({ latLng }) => {
+                    this.formData.push({
+                        let: latLng.lat(),
+                        long: latLng.lng()
+                    });
+                    new google.maps.Marker({
+                        position: latLng,
+                        map: this.map,
+                        draggable: true
+                    });
+                });
         },
         formatData() {
             let paths = this.polygon.getPath().getArray();
@@ -182,4 +236,8 @@ new Vue({
             vm.drawingManager.setMap(null);
         }
     },
+    mounted() {
+        this.$set(this, 'windowPath', window.location.pathname.split('/')[1]);
+        if (this.windowPath == 'getform') this.review();
+    }
 });
