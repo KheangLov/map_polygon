@@ -17,8 +17,8 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::view('form','mapview');
+Route::view('form', 'mapview');
 Route::post('submit', [App\Http\Controllers\MapController::class, 'save']);
-Route::view('getform','getmapview');
-Route::view('draw','draw_polygon');
+Route::view('getform', 'getmapview');
+Route::view('draw', 'draw_polygon');
 Route::get('review', [App\Http\Controllers\MapController::class, 'list']);
