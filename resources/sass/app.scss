@@ -1,0 +1,28 @@
+// Fonts
+@import url('https://fonts.googleapis.com/css?family=Nunito');
+
+// Variables
+@import 'variables';
+
+// Bootstrap
+@import '~bootstrap/scss/bootstrap';
+
+#map_property {
+    height: 100vh;
+}
+
+.height-79vh {
+    height: 79vh;
+}
+
+.height-35vh {
+    height: 35vh;
+}
+
+pre {
+    cursor: pointer;
+}
+
+.bg-custom {
+    background-color: #eaeaea;
+}
