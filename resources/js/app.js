@@ -218,9 +218,9 @@ new Vue({
                 paths,
                 strokeColor: "#ff0000",
                 strokeOpacity: 1,
-                strokeWeight: 5,
+                strokeWeight: 2,
                 fillOpacity: 0,
-                editable: true,
+                editable: false,
             });
             polygon.setMap(vm.map);
             vm.$set(vm, 'polygon', polygon);
